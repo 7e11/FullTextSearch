@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, stdin};
 use serde::Deserialize;
 use std::time::Instant;
 use regex::{RegexBuilder};
@@ -34,19 +34,32 @@ fn main() {
             }
         }
     }
-    println!("Build index in {} ms", now.elapsed().as_millis());
-    let now = Instant::now();
-    let text = "large cat";
-    let id_lists = search_index(&inverted_index, text);
+    println!("Built index in {} ms", now.elapsed().as_millis());
 
-    let intersection: HashSet<u32> = id_lists.into_iter().reduce(|set1, set2| {
-        set1.intersection(&set2).copied().collect()
-    }).unwrap();
-    let docs_text: Vec<String> = intersection.into_iter()
-        .map(|i| docs.get(i as usize).unwrap())
-        .map(|doc: &Document| format!("📚 {} - {}", doc.title.clone(), doc.text.clone())).collect();
-    docs_text.iter().for_each(|s| println!("{}", s));
-    println!("Index Search for '{}' took {} ms", text, now.elapsed().as_millis());
+    // Take user input in a loop and do searches with that text
+    println!("Type in some 🔍 keywords");
+    let mut input = String::new();
+    loop {
+        input.clear();
+        stdin().read_line(&mut input).unwrap();
+        input = input.trim().to_string();   //Trim trailing newline
+        let now = Instant::now();
+        let id_lists = search_index(&inverted_index, input.as_str());
+        let intersection: Option<HashSet<u32>> = id_lists.into_iter().reduce(|set1, set2| {
+            // copied() maps copy() over the iter.
+            set1.intersection(&set2).copied().collect()
+        });
+        match intersection {
+            Some(set) => {
+                let docs_text: Vec<String> = set.into_iter()
+                    .map(|i| docs.get(i as usize).unwrap())
+                    .map(|doc: &Document| format!("📚 {} - {}", doc.title, doc.text)).collect();
+                docs_text.iter().for_each(|s| println!("{}", s));
+                println!("Index Search for '{}' took {} ms", input, now.elapsed().as_millis());
+            },
+            None => println!("No Results Found for '{}'", input),
+        }
+    }
 }
 
 /// Takes a query term, breaks it into tokens, and sees which documents have those tokens.

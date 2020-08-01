@@ -1,4 +1,5 @@
-## FullTextSearch
+## FullTextSearch PoC
+Basic FTS on a wikipedia archive
 
 7/30/2020 - Starting with this article [Let's build a Full-Text Search engine](https://artem.krylysov.com/blog/2020/07/28/lets-build-a-full-text-search-engine/).
 > Full-Text Search (FTS) is a technique for searching text in a collection of documents. A Document can refer to a web page, a newspaper article, an email message, or any structured text.
@@ -8,6 +9,7 @@ The full dataset is ~900MB uncompressed.
 
 TODO:
 - Persist index to disk
+- Use an LSM tree somehow to speed up data accesses. Reading the entire file in to memory doesn't make sense.
 - Search for synonyms for terms
 - Store sets of document IDs with [Roaring Bitmaps](https://roaringbitmap.org/)
 - Determine result relevance with [tf-idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
